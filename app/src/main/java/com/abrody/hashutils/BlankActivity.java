@@ -42,4 +42,10 @@ public class BlankActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void doGoButton(View view) {
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
+
+    }
+
 }
