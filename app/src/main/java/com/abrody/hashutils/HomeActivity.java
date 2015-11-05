@@ -1,5 +1,6 @@
 package com.abrody.hashutils;
 
+import android.content.SharedPreferences;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,6 +24,13 @@ import android.view.ViewGroup;
 
 import android.widget.EditText;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -41,6 +50,21 @@ public class HomeActivity extends AppCompatActivity {
     private ViewPager mViewPager;
 
     public static final String TAG = "HomeActivity";
+    public static final String PREFS_NAME = "HashUtilsPrefs";
+
+    private Set<String> hashAlgorithms;
+
+    public List<String> getAllHashAlgoriths() {
+        List<String> list = new ArrayList<>(HashLib.supportedAlgorithms);
+        Collections.sort(list);
+        return list;
+    }
+
+    private List<String> getHashAlgorithmsSorted() {
+        ArrayList<String> list = new ArrayList<>(hashAlgorithms);
+        Collections.sort(list);
+        return list;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +84,14 @@ public class HomeActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+        loadHashAlgoPreferences();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveHashAlgoPreferences();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,12 +120,17 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         Log.d(TAG, "onMenuItemClick!");
-//                        YourActivity.this.someFunctionInYourActivity();
+                        onHashesMenuClick(item);
                         return true;
                     }
                 });
+
                 MenuInflater inflater = popup.getMenuInflater();
                 inflater.inflate(R.menu.menu_hashes, popup.getMenu());
+
+
+                populateHashesMenu(popup);
+
                 popup.show();
                 return true;
             }
@@ -104,6 +139,26 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG, "unexpected onOptionsItemSelected: " + id);
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void populateHashesMenu(PopupMenu popup) {
+        Menu menu = popup.getMenu();
+        for (String algo : getAllHashAlgoriths()) {
+            MenuItem item = menu.add(0, Menu.FIRST, 0, algo);
+            item.setCheckable(true);
+            item.setChecked(hashAlgorithms.contains(algo));
+        }
+    }
+
+    private void onHashesMenuClick(MenuItem item) {
+        String algo = item.getTitle().toString();
+        if (item.isChecked()) {
+            item.setChecked(false);
+            hashAlgorithms.remove(algo);
+        } else {
+            item.setChecked(true);
+            hashAlgorithms.add(algo);
+        }
     }
 
     /**
@@ -193,5 +248,30 @@ public class HomeActivity extends AppCompatActivity {
         EditText et_text = (EditText) findViewById(R.id.home_edit_text);
         String digest = HashLib.sha1sum(et_text.getText().toString());
         et_digest.setText(digest);
+    }
+
+    public static final String ALGO_PREFS = "EnabledAlgorithms";
+
+    private void loadHashAlgoPreferences() {
+        ArrayList<String> list = new ArrayList<String>();
+
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        hashAlgorithms = settings.getStringSet(ALGO_PREFS, defaultHashAlgoPreferences());
+        Log.d(TAG, "Loaded algo preferences: " + TextUtils.join(",", hashAlgorithms));
+    }
+
+    private void saveHashAlgoPreferences() {
+        Log.d(TAG, "Saving hash algo preferences: " + TextUtils.join(",", hashAlgorithms));
+        // We need an Editor object to make preference changes.
+        // All objects are from android.context.Context
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putStringSet(ALGO_PREFS, hashAlgorithms);
+        editor.apply();
+    }
+
+    private Set<String> defaultHashAlgoPreferences() {
+        return new HashSet<String>(Arrays.asList("SHA1", "SHA256"));
     }
 }
