@@ -4,6 +4,7 @@ import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,13 +78,33 @@ public class HomeActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings: {
+                Log.d(TAG, "action_settings clicked");
+                return true;
+            }
+            case R.id.action_appsettings: {
+                Log.d(TAG, "trying to inflate menu_hashes");
+                PopupMenu popup = new PopupMenu(this, findViewById(id));
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Log.d(TAG, "onMenuItemClick!");
+//                        YourActivity.this.someFunctionInYourActivity();
+                        return true;
+                    }
+                });
+                MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.menu_hashes, popup.getMenu());
+                popup.show();
+                return true;
+            }
         }
+
+        Log.d(TAG, "unexpected onOptionsItemSelected: " + id);
 
         return super.onOptionsItemSelected(item);
     }
-
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -134,25 +156,11 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * This fragment contains the text checksum view.
      */
-    public static class HomeTextFragment extends Fragment implements View.OnClickListener {
+    public static class HomeTextFragment extends Fragment {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_home_text, container, false);
-        }
-
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.home_text_btn_generate:
-                    // your stuff here
-                    textGenerateHash();
-
-                    break;
-                default:
-                    Log.w(TAG, "No onClick defined for " + v.getId());
-                    break;
-            }
-
         }
     }
 
@@ -180,6 +188,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void textGenerateHash(View view) {
+        Log.d(TAG, "textGenerateHash()");
         EditText et_digest = (EditText) findViewById(R.id.home_text_hexdigest);
         EditText et_text = (EditText) findViewById(R.id.home_edit_text);
         String digest = HashLib.sha1sum(et_text.getText().toString());

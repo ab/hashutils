@@ -24,7 +24,6 @@
 
             />
 
-
         <Button
             android:id="@+id/home_text_btn_generate"
             android:layout_width="wrap_content"
@@ -36,10 +35,6 @@
             android:onClick="textGenerateHash"
 
             />
-        <!--
-        android:backgroundTint="@color/colorAccent"
-        android:elevation="2dp"
-        -->
     </LinearLayout>
 
     <LinearLayout
@@ -68,5 +63,7 @@
             android:textIsSelectable="true"
             />
     </LinearLayout>
+
+
 
 </LinearLayout>
