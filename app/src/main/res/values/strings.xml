@@ -9,4 +9,5 @@
     <string name="text">Text</string>
     <string name="et_text">Text to hash</string>
     <string name="generate_hash">generate</string>
+    <string name="et_file_filepath">Filename</string>
 </resources>

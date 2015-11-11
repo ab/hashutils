@@ -2,6 +2,7 @@ package com.abrody.hashutils;
 
 import android.app.ActionBar;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -31,7 +32,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -253,6 +259,54 @@ public class HomeActivity extends AppCompatActivity {
             ((HomeActivity) v.getContext()).textInitializeResultsLayout();
             return v;
         }
+    }
+
+    public void fileGenerateHash(View view) {
+        Log.d(TAG, "fileGenerateHash()");
+
+        EditText et_filepath = (EditText) findViewById(R.id.home_file_filepath);
+        String filepath = et_filepath.getText().toString();
+
+
+        if (!Misc.isExternalStorageReadable()) {
+            throw new RuntimeException("External storage not readable");
+        }
+
+        if (filepath.isEmpty()) {
+            // List files in external root directory
+            String extRootPath = Environment.getExternalStorageDirectory().toString();
+            Log.d(TAG, "sdcard root: " + extRootPath);
+            File extRoot = new File(extRootPath);
+
+            for (File f : extRoot.listFiles()) {
+                Log.d(TAG, "> " + f.getPath());
+            }
+
+            Toast.makeText(this, "No file chosen", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        File file = new File(filepath);
+        if (file.isDirectory()) {
+            Toast.makeText(this, "Path is a directory", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Path is a directory: " + filepath);
+            for (File f : file.listFiles()) {
+                Log.d(TAG, "> " + f.getPath());
+            }
+            return;
+        }
+
+        String digest;
+
+        try {
+            digest = HashLib.hexDigest("SHA1", file);
+        }
+        catch (IOException e) {
+            Toast.makeText(this, "IOException: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Toast.makeText(this, "SHA1: " + digest, Toast.LENGTH_LONG).show();
     }
 
     public void textGenerateHash(View view) {

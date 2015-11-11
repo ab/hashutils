@@ -44,7 +44,7 @@
             />
     </LinearLayout>
 
-
+    <!-- TODO: convert to TableLayout -->
     <LinearLayout
         android:id="@+id/home_text_results"
         android:layout_width="match_parent"
